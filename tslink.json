@@ -1,0 +1,25 @@
+{
+  "extends": [
+    "tslint:recommended"
+  ],
+  "rules": {
+    "object-literal-sort-keys": false,
+    "max-line-length": {
+      "options": [300]
+    },
+    "unified-signatures": false,
+    "no-namespace":false,
+    "experimentalDecorators": true,
+    "only-arrow-functions": false,
+    "max-classes-per-file": 10,
+    "no-new-func": false,
+    "no-empty": false,
+    "ordered-imports": false,
+    "member-ordering": false,
+    "no-bitwise": false,
+    "ban-types":false,
+    "no-var-requires": false,
+    "no-console": false
+
+  }
+}

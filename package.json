@@ -1,0 +1,45 @@
+{
+  "name": "papio-apollo",
+  "version": "0.0.1",
+  "description": "nodejs dependency injection Framework",
+  "main": "lib/PapioApollo.js",
+  "types": "lib/PapioApollo.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/potenstop/papio"
+  },
+  "keywords": [
+    "typescript",
+    "nodejs",
+    "web"
+  ],
+  "files": [
+    "src",
+    "lib"
+  ],
+  "scripts": {
+    "build": "rimraf ./lib && tsc"
+  },
+  "author": "potenstop@163.com",
+  "license": "ISC",
+  "dependencies": {
+    "agentkeepalive": "4.0.0",
+    "reflect-metadata": "^0.1.12"
+  },
+  "engines": {
+    "node": ">= 9.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "@types/should": "^13.0.0",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "rimraf": "^2.6.3",
+    "should": "^13.2.3",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "typescript": "^3.5.2",
+    "type-slf4": "0.0.4"
+  }
+}

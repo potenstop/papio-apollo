@@ -5,7 +5,9 @@ import {ContentTypeEnum} from "../enum/ContentTypeEnum";
 import {HttpStatusEnum} from "../enum/HttpStatusEnum";
 import {HttpRequestContext} from "../model/HttpRequestContext";
 import * as Agent from "agentkeepalive";
-
+import {LoggerFactory} from "type-slf4"
+import {log} from "util";
+const logger = LoggerFactory.getLogger("papio-apollo.protocol.HttpPollingProtocol");
 /**
  *
  * 功能描述: http长轮询请求方式
@@ -41,6 +43,9 @@ export class HttpPollingProtocol {
      */
     private namespaceNameStrings: string;
 
+    public getMetaAddress(): string {
+        return this.metaAddress;
+    }
     public setMetaAddress(metaAddress: string): void {
         this.metaAddress = metaAddress;
     }
@@ -90,14 +95,22 @@ export class HttpPollingProtocol {
      * 开始执行定时
      */
     public async startTask() {
-        const map = await this.pull();
-        this.syncConfig(map);
+        logger.debug("startTask meta:[{}] frequency:[{}] appId:[{}] clusterName:[{}] namespaceNameStrings:[{}]",
+            this.getMetaAddress(), this.getFrequency(), this.getAppId(), this.getClusterName(), this.getClusterName(), this.getNamespaceNameStrings());
+        await this.pullAndSync();
         setInterval(async ()=> {
-            const map1 = await this.pull();
-            this.syncConfig(map1);
+            await this.pullAndSync()
         }, this.frequency * 1000);
     }
-
+    private async pullAndSync() {
+        let map = null;
+        try {
+            map = await this.pull();
+        } catch (e) {
+            logger.error("pull error", e);
+        }
+        this.syncConfig(map);
+    }
     /**
      * 进行一次pull
      */
@@ -118,12 +131,14 @@ export class HttpPollingProtocol {
                 timeout: 60000,
                 freeSocketTimeout: 30000
             });
-            requestOptions.path = `/configfiles/json/${this.getAppId()}/${this.getClusterName()}/${namespaceName}`
+            requestOptions.path = `/configfiles/json/${this.getAppId()}/${this.getClusterName()}/${namespaceName}`;
+            logger.debug("pull start path:[{}]", requestOptions.path);
             let httpRequestContext = await requestPromise(requestOptions, 5000);
+            logger.debug("pull end result:[{}]", httpRequestContext);
             let json = JSON.parse(httpRequestContext.data);
             Object.keys(json).forEach((key) => {
                 keyMap.set(key, json[key]);
-            })
+            });
         }
         return keyMap;
     }
@@ -153,9 +168,7 @@ export class HttpPollingProtocol {
             // @ts-ignore
             global.papioApplication = config;
         }
-
     }
-
 }
 async function requestPromise(options: RequestOptions, timeout: number, requestBody?: object): Promise<HttpRequestContext> {
     let isReturn = false;

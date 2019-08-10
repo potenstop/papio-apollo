@@ -134,7 +134,7 @@ export class HttpPollingProtocol {
             requestOptions.path = `/configfiles/json/${this.getAppId()}/${this.getClusterName()}/${namespaceName}`;
             logger.debug("pull start path:[{}]", requestOptions.path);
             const httpRequestContext = await requestPromise(requestOptions, 5000);
-            logger.debug("pull end result:[{}]", httpRequestContext);
+            logger.debug("pull end result:[{}]", httpRequestContext.data);
             const json = JSON.parse(httpRequestContext.data);
             Object.keys(json).forEach((key) => {
                 keyMap.set(key, json[key]);

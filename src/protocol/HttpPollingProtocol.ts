@@ -159,7 +159,7 @@ export class HttpPollingProtocol {
                     papioApplicationNew.set(key, papioApplication.get(key));
                 }
             });
-            config.forEach((key, value) => {
+            config.forEach((value, key) => {
                 if (!papioApplicationSourceKeys.has(key)) {
                     papioApplicationNew.set(key, value);
                 }

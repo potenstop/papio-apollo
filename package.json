@@ -1,6 +1,6 @@
 {
   "name": "papio-apollo",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "nodejs dependency injection Framework",
   "main": "lib/PapioApollo.js",
   "types": "lib/PapioApollo.d.ts",

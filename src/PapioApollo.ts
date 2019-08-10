@@ -13,7 +13,7 @@ import {GlobalEnum} from "./enum/GlobalEnum";
 export class PapioApollo {
     public static start() {
         return async function() {
-            let httpPollingProtocol = new HttpPollingProtocol();
+            const httpPollingProtocol = new HttpPollingProtocol();
             // @ts-ignore
             const papioApplication = global[GlobalEnum.PAPIO_APPLICATION];
             if (papioApplication.has(GlobalEnum.APP_ID)) {
@@ -23,10 +23,9 @@ export class PapioApollo {
                 httpPollingProtocol.setMetaAddress(papioApplication.get(GlobalEnum.APOLLO_META));
             }
             if (papioApplication.has(GlobalEnum.APOLLO_BOOTSTRAP_NAMESPACES)) {
-                httpPollingProtocol.setNamespaceNameStrings(papioApplication.get(GlobalEnum.APOLLO_BOOTSTRAP_NAMESPACES))
+                httpPollingProtocol.setNamespaceNameStrings(papioApplication.get(GlobalEnum.APOLLO_BOOTSTRAP_NAMESPACES));
             }
             await httpPollingProtocol.startTask();
-
         };
     }
 }

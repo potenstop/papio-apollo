@@ -5,7 +5,7 @@ import {ContentTypeEnum} from "../enum/ContentTypeEnum";
 import {HttpStatusEnum} from "../enum/HttpStatusEnum";
 import {HttpRequestContext} from "../model/HttpRequestContext";
 import * as Agent from "agentkeepalive";
-import {LoggerFactory} from "type-slf4"
+import {LoggerFactory} from "type-slf4";
 import {log} from "util";
 const logger = LoggerFactory.getLogger("papio-apollo.protocol.HttpPollingProtocol");
 /**
@@ -82,7 +82,7 @@ export class HttpPollingProtocol {
         this.namespaceNameStrings = namespaceNameStrings;
     }
 
-    constructor(){
+    constructor() {
         this.metaAddress = "http://meta.apollo.com";
         this.frequency = 30;
         this.appId = "papio-apollo";
@@ -98,8 +98,8 @@ export class HttpPollingProtocol {
         logger.debug("startTask meta:[{}] frequency:[{}] appId:[{}] clusterName:[{}] namespaceNameStrings:[{}]",
             this.getMetaAddress(), this.getFrequency(), this.getAppId(), this.getClusterName(), this.getClusterName(), this.getNamespaceNameStrings());
         await this.pullAndSync();
-        setInterval(async ()=> {
-            await this.pullAndSync()
+        setInterval(async () => {
+            await this.pullAndSync();
         }, this.frequency * 1000);
     }
     private async pullAndSync() {
@@ -116,12 +116,12 @@ export class HttpPollingProtocol {
      */
     public async pull(): Promise<Map<string, string>> {
         // 进行一次请求
-        let namespaceNameList = this.namespaceNameStrings.split(",");
-        let keyMap = new Map<string, string>();
+        const namespaceNameList = this.namespaceNameStrings.split(",");
+        const keyMap = new Map<string, string>();
         for (const namespaceName of namespaceNameList) {
             const requestOptions: RequestOptions = {};
             // requestOptions.agent = this.options.agent;
-            let url = new URL(this.metaAddress);
+            const url = new URL(this.metaAddress);
             requestOptions.host = url.hostname;
             requestOptions.port = url.port;
             requestOptions.method = "GET";
@@ -129,13 +129,13 @@ export class HttpPollingProtocol {
                 maxSockets: 100,
                 maxFreeSockets: 10,
                 timeout: 60000,
-                freeSocketTimeout: 30000
+                freeSocketTimeout: 30000,
             });
             requestOptions.path = `/configfiles/json/${this.getAppId()}/${this.getClusterName()}/${namespaceName}`;
             logger.debug("pull start path:[{}]", requestOptions.path);
-            let httpRequestContext = await requestPromise(requestOptions, 5000);
+            const httpRequestContext = await requestPromise(requestOptions, 5000);
             logger.debug("pull end result:[{}]", httpRequestContext);
-            let json = JSON.parse(httpRequestContext.data);
+            const json = JSON.parse(httpRequestContext.data);
             Object.keys(json).forEach((key) => {
                 keyMap.set(key, json[key]);
             });
@@ -146,7 +146,7 @@ export class HttpPollingProtocol {
     /**
      * 同步配置
      */
-    public syncConfig(config: Map<string,string>) {
+    public syncConfig(config: Map<string, string>) {
         // @ts-ignore
         const papioApplication = global.papioApplication;
         // @ts-ignore
@@ -163,7 +163,9 @@ export class HttpPollingProtocol {
                 if (!papioApplicationSourceKeys.has(key)) {
                     papioApplicationNew.set(key, value);
                 }
-            })
+            });
+            // @ts-ignore
+            global.papioApplication = papioApplicationNew;
         } else {
             // @ts-ignore
             global.papioApplication = config;

@@ -15,4 +15,6 @@ export enum GlobalEnum {
     APOLLO_BOOTSTRAP_ENABLED = "apollo.bootstrap.enabled",
     APOLLO_BOOTSTRAP_NAMESPACES = "apollo.bootstrap.namespaces",
     APOLLO_META = "apollo.meta",
+    APOLLO_CACHEDIR = "apollo.cacheDir",
+    APOLLO_CLUSTER = "apollo.cluster",
 }

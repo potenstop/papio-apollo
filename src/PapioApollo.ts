@@ -25,6 +25,12 @@ export class PapioApollo {
             if (papioApplication.has(GlobalEnum.APOLLO_BOOTSTRAP_NAMESPACES)) {
                 httpPollingProtocol.setNamespaceNameStrings(papioApplication.get(GlobalEnum.APOLLO_BOOTSTRAP_NAMESPACES));
             }
+            if (papioApplication.has(GlobalEnum.APOLLO_CACHEDIR)) {
+                httpPollingProtocol.setCacheDir(papioApplication.get(GlobalEnum.APOLLO_CACHEDIR));
+            }
+            if (papioApplication.has(GlobalEnum.APOLLO_CLUSTER)) {
+                httpPollingProtocol.setCluster(papioApplication.get(GlobalEnum.APOLLO_CLUSTER));
+            }
             await httpPollingProtocol.startTask();
         };
     }

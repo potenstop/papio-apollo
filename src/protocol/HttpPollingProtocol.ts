@@ -6,7 +6,9 @@ import {HttpStatusEnum} from "../enum/HttpStatusEnum";
 import {HttpRequestContext} from "../model/HttpRequestContext";
 import * as Agent from "agentkeepalive";
 import {LoggerFactory} from "type-slf4";
-import {log} from "util";
+import * as os from "os";
+import * as fs from "fs";
+import * as path from "path";
 const logger = LoggerFactory.getLogger("papio-apollo.protocol.HttpPollingProtocol");
 /**
  *
@@ -33,15 +35,22 @@ export class HttpPollingProtocol {
      */
     private appId: string;
 
-    /**
-     * 集群名称
-     */
-    private clusterName: string;
 
     /**
      * 多个命名空间名称 按逗号分隔
      */
     private namespaceNameStrings: string;
+
+    /**
+     * 缓存目录  window:  C:\opt\data\{appId}\config-cache  Mac/Linux: /opt/data/{appId}/config-cache
+     */
+    private cacheDir: string;
+
+    /**
+     * 集群 默认为default
+     */
+    private cluster: string;
+
 
     public getMetaAddress(): string {
         return this.metaAddress;
@@ -66,14 +75,6 @@ export class HttpPollingProtocol {
         this.appId = appId;
     }
 
-    public getClusterName(): string {
-        return this.clusterName;
-    }
-
-    public setClusterName(clusterName: string): void {
-        this.clusterName = clusterName;
-    }
-
     public getNamespaceNameStrings(): string {
         return this.namespaceNameStrings;
     }
@@ -82,21 +83,62 @@ export class HttpPollingProtocol {
         this.namespaceNameStrings = namespaceNameStrings;
     }
 
+    public getCacheDir(): string {
+        return this.cacheDir;
+    }
+
+    public setCacheDir(cacheDir: string): void {
+        this.cacheDir = cacheDir;
+    }
+
+    public getCluster(): string {
+        return this.cluster;
+    }
+
+    public setCluster(cluster: string): void {
+        this.cluster = cluster;
+    }
+
     constructor() {
         this.metaAddress = "http://meta.apollo.com";
         this.frequency = 30;
         this.appId = "papio-apollo";
-        this.clusterName = "default";
+        this.cluster = "default";
         this.namespaceNameStrings = "application";
-
+        this.cacheDir = "";
+        if (os.type() === "Windows_NT") {
+            this.cacheDir = "C:\\opt\\data\\" + this.appId +"\\config-cache"
+        } else {
+            this.cacheDir = "/opt/data/" + this.appId + "/config-cache"
+        }
     }
-
+    public mkCacheDir() {
+        fs.mkdirSync(this.cacheDir, { recursive: true });
+    }
+    public writeByName(namespaceName: string, data: string) {
+        this.mkCacheDir();
+        const stream = fs.createWriteStream(path.join(this.cacheDir, `${this.appId}+${this.getCluster()}+${namespaceName}.json`));
+        stream.write(data);
+        stream.close();
+    }
+    public readByName(namespaceName: string): object {
+        // this.mkCacheDir();
+        const filePath = path.join(this.cacheDir, `${this.appId}+${this.getCluster()}+${namespaceName}.json`);
+        try {
+            const dataStr = fs.readFileSync(filePath, 'utf8');
+            return JSON.parse(dataStr);
+        } catch (e) {
+            logger.error("read cache error file:{}", e, filePath);
+            return {};
+        }
+    }
     /**
      * 开始执行定时
      */
     public async startTask() {
         logger.debug("startTask meta:[{}] frequency:[{}] appId:[{}] clusterName:[{}] namespaceNameStrings:[{}]",
-            this.getMetaAddress(), this.getFrequency(), this.getAppId(), this.getClusterName(), this.getClusterName(), this.getNamespaceNameStrings());
+            this.getMetaAddress(), this.getFrequency(), this.getAppId(), this.getCluster(), this.getNamespaceNameStrings());
+        this.mkCacheDir();
         await this.pullAndSync();
         setInterval(async () => {
             await this.pullAndSync();
@@ -109,7 +151,9 @@ export class HttpPollingProtocol {
         } catch (e) {
             logger.error("pull error", e);
         }
-        this.syncConfig(map);
+        if (map != null) {
+            this.syncConfig(map);
+        }
     }
     /**
      * 进行一次pull
@@ -131,13 +175,21 @@ export class HttpPollingProtocol {
                 timeout: 60000,
                 freeSocketTimeout: 30000,
             });
-            requestOptions.path = `/configfiles/json/${this.getAppId()}/${this.getClusterName()}/${namespaceName}`;
+            requestOptions.path = `/configfiles/json/${this.getAppId()}/${this.getCluster()}/${namespaceName}`;
             logger.debug("pull start path:[{}]", requestOptions.path);
-            const httpRequestContext = await requestPromise(requestOptions, 5000);
-            logger.debug("pull end result:[{}]", httpRequestContext.data);
-            const json = JSON.parse(httpRequestContext.data);
-            Object.keys(json).forEach((key) => {
-                keyMap.set(key, json[key]);
+            let jsonData = {};
+            try {
+                const httpRequestContext = await requestPromise(requestOptions, 5000);
+                logger.debug("pull end result:[{}]", JSON.stringify(httpRequestContext.data));
+                jsonData = JSON.parse(httpRequestContext.data);
+                this.writeByName(namespaceName, JSON.stringify(jsonData, null, "    "))
+            } catch (e) {
+                logger.error("read server error namespaceName:{}", e, namespaceName);
+                // 读取缓存
+                jsonData = this.readByName(namespaceName);
+            }
+            Object.keys(jsonData).forEach((key) => {
+                keyMap.set(key, jsonData[key]);
             });
         }
         return keyMap;

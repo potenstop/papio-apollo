@@ -1,6 +1,6 @@
 {
   "name": "papio-apollo",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "nodejs dependency injection Framework",
   "main": "lib/PapioApollo.js",
   "types": "lib/PapioApollo.d.ts",
@@ -27,7 +27,7 @@
     "reflect-metadata": "^0.1.12"
   },
   "engines": {
-    "node": ">= 9.0.0"
+    "node": ">= 10.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",

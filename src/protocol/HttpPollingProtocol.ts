@@ -73,6 +73,7 @@ export class HttpPollingProtocol {
 
     public setAppId(appId: string): void {
         this.appId = appId;
+        this.updateCacheDir();
     }
 
     public getNamespaceNameStrings(): string {
@@ -106,6 +107,9 @@ export class HttpPollingProtocol {
         this.cluster = "default";
         this.namespaceNameStrings = "application";
         this.cacheDir = "";
+        this.updateCacheDir();
+    }
+    private updateCacheDir() {
         if (os.type() === "Windows_NT") {
             this.cacheDir = "C:\\opt\\data\\" + this.appId +"\\config-cache"
         } else {
